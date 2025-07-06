@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Daily Journal 🌸</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #ffe4f2, #fce1ff);
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+    ::placeholder {
+      color: #c78cab;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4">
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 mt-6">
+    <h1 class="text-2xl text-pink-600 font-bold text-center mb-4">🌼 My Daily Journal</h1>
+
+    <label class="text-pink-700 font-semibold block mb-1">📅 Select Date</label>
+    <input type="date" id="datePicker" class="w-full p-2 mb-4 rounded-xl border" onchange="loadDayData()"/>
+
+    <label class="text-pink-700 font-semibold block mb-2">📝 Tasks</label>
+    <ul id="taskList" class="mb-4 space-y-2"></ul>
+    <div class="flex gap-2 mb-4">
+      <input id="newTask" class="flex-1 p-2 border rounded-xl" placeholder="Add a task..." />
+      <button onclick="addTask()" class="bg-pink-500 text-white px-4 rounded-xl">Add</button>
+    </div>
+
+    <label class="text-pink-700 font-semibold block mb-2">😊 Mood</label>
+    <select id="mood" class="w-full p-2 rounded-xl border mb-4">
+      <option value="">Select Mood</option>
+      <option>Happy 😊</option>
+      <option>Sad 😢</option>
+      <option>Excited 🤩</option>
+      <option>Lazy 😴</option>
+      <option>Busy 🐝</option>
+    </select>
+
+    <label class="text-pink-700 font-semibold block mb-2">📔 Notes</label>
+    <textarea id="notes" rows="3" class="w-full p-2 rounded-xl border mb-4" placeholder="Write anything..."></textarea>
+
+    label class="text-pink-700 font-semibold block mb-2">🌈 One Good Thing That Happened To Me</label>
+    <textarea id="goodHappened" rows="2" class="w-full p-2 rounded-xl border mb-4" placeholder="Something lucky, beautiful, kind or sweet that made me smile 🌷"></textarea>
+
+    <label class="text-pink-700 font-semibold block mb-2">🌟 One Good Thing I Did Today</label>
+    <textarea id="goodThing" rows="2" class="w-full p-2 rounded-xl border mb-4" placeholder="I helped, smiled, or tried... something good! 💕"></textarea>
+
+
+    <div class="flex justify-between mt-4">
+      <button onclick="saveDayData()" class="bg-purple-500 text-white px-4 py-2 rounded-xl">💾 Save Day</button>
+      <button onclick="clearDay()" class="bg-red-400 text-white px-4 py-2 rounded-xl">🧹 Clear</button>
+    </div>
+  </div>
+
+  <script>
+    const taskList = document.getElementById('taskList');
+    const newTask = document.getElementById('newTask');
+    const datePicker = document.getElementById('datePicker');
+
+    // Default to today's date
+    const today = new Date().toISOString().split('T')[0];
+    datePicker.value = today;
+
+    function getStorageKey() {
+      return `journal-${datePicker.value}`;
+    }
+
+    function addTask(text = '', done = false) {
+      const li = document.createElement('li');
+      li.className = "flex items-center gap-2";
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = done;
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = text;
+      input.className = "flex-1 p-1 rounded border";
+
+      const del = document.createElement('button');
+      del.innerText = '❌';
+      del.onclick = () => li.remove();
+
+      li.appendChild(checkbox);
+      li.appendChild(input);
+      li.appendChild(del);
+      taskList.appendChild(li);
+    }
+
+    function saveDayData() {
+      const data = {
+        tasks: Array.from(taskList.children).map(li => ({
+          text: li.children[1].value,
+          done: li.children[0].checked
+        })),
+        mood: document.getElementById('mood').value,
+        notes: document.getElementById('notes').value,
+        goodThing: document.getElementById('goodThing').value,
+        goodHappened: document.getElementById('goodHappened').value,
+
+      };
+      localStorage.setItem(getStorageKey(), JSON.stringify(data));
+      alert("Saved for " + datePicker.value);
+    }
+
+    function loadDayData() {
+      const data = JSON.parse(localStorage.getItem(getStorageKey()));
+      taskList.innerHTML = '';
+      if (data) {
+        data.tasks.forEach(t => addTask(t.text, t.done));
+        document.getElementById('mood').value = data.mood;
+        document.getElementById('notes').value = data.notes;
+        document.getElementById('goodHappened').value = data.goodHappened || '';
+        document.getElementById('goodThing').value = data.goodThing || '';
+      } else {
+        document.getElementById('mood').value = '';
+        document.getElementById('notes').value = '';
+      }
+    }
+
+    function clearDay() {
+      if (confirm("Clear everything for this date?")) {
+        localStorage.removeItem(getStorageKey());
+        loadDayData();
+      }
+    }
+  
+    // Initial load
+    loadDayData();
+  </script>
+</body>
+</html>
